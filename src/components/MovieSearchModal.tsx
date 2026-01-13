@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Loader2 } from "lucide-react";
@@ -11,7 +16,11 @@ interface MovieSearchModalProps {
   onSelectMovie: (movie: { id: string; poster: string }) => void;
 }
 
-export function MovieSearchModal({ open, onClose, onSelectMovie }: MovieSearchModalProps) {
+export function MovieSearchModal({
+  open,
+  onClose,
+  onSelectMovie,
+}: MovieSearchModalProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MovieSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,13 +28,13 @@ export function MovieSearchModal({ open, onClose, onSelectMovie }: MovieSearchMo
 
   const handleSearch = async () => {
     if (!query.trim()) return;
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const data = await searchMovies(query);
-      setResults(data.filter(m => m.film_id && m.poster));
+      setResults(data.filter((m) => m.film_id));
     } catch (err) {
       setError("Failed to search movies. Please try again.");
       setResults([]);
@@ -35,7 +44,11 @@ export function MovieSearchModal({ open, onClose, onSelectMovie }: MovieSearchMo
   };
 
   const handleSelect = (movie: MovieSearchResult) => {
-    onSelectMovie({ id: movie.film_id, poster: movie.poster });
+    onSelectMovie({
+      id: movie.film_id,
+      poster: movie.poster,
+      title: movie.title,
+    });
     setQuery("");
     setResults([]);
     onClose();
@@ -54,7 +67,7 @@ export function MovieSearchModal({ open, onClose, onSelectMovie }: MovieSearchMo
         <DialogHeader>
           <DialogTitle>Search Movies</DialogTitle>
         </DialogHeader>
-        
+
         <div className="flex gap-2 mb-4">
           <Input
             placeholder="Type a movie name..."
@@ -64,13 +77,15 @@ export function MovieSearchModal({ open, onClose, onSelectMovie }: MovieSearchMo
             className="flex-1"
           />
           <Button onClick={handleSearch} disabled={isLoading}>
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
           </Button>
         </div>
 
-        {error && (
-          <p className="text-destructive text-sm mb-4">{error}</p>
-        )}
+        {error && <p className="text-destructive text-sm mb-4">{error}</p>}
 
         <div className="flex-1 overflow-y-auto">
           {results.length > 0 ? (
@@ -82,19 +97,25 @@ export function MovieSearchModal({ open, onClose, onSelectMovie }: MovieSearchMo
                   className="group relative aspect-[2/3] rounded-lg overflow-hidden border border-border hover:border-primary transition-all hover:scale-105"
                 >
                   <img
-                    src={movie.poster}
+                    src={movie.poster || "/placeholder.png"}
                     alt="Movie poster"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/placeholder.svg";
+                      (e.target as HTMLImageElement).src = "/placeholder.png";
                     }}
                   />
-                  <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/20 transition-colors" />
+                  <div className="absolute inset-0 bg-primary/0 group-hover:bg-black/60 transition-colors" />
+                  <div className="pointer-events-none absolute inset-0 flex items-end p-2">
+                    <span className="w-full text-sm font-medium text-white opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all line-clamp-2">
+                      {movie.title}
+                    </span>
+                  </div>
                 </button>
               ))}
             </div>
           ) : (
-            !isLoading && query && (
+            !isLoading &&
+            query && (
               <p className="text-muted-foreground text-center py-8">
                 No results found. Try a different search term.
               </p>

@@ -1,6 +1,7 @@
 export interface SeedMovie {
   id: string;
   poster: string;
+  title: string;
 }
 
 export interface RecommendedMovie {
@@ -14,4 +15,5 @@ export interface RecommendedMovie {
   casts?: string;
   tagline?: string;
   duration?: string;
+  rating?: string;
 }

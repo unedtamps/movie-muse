@@ -3,7 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRecommendations } from "@/stores/recommendations";
+import { useSeeds } from "@/stores/seeds";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { MovieSearchModal } from "@/components/MovieSearchModal";
 import { MovieCard } from "@/components/MovieCard";
 import { AddMovieCard } from "@/components/AddMovieCard";
@@ -14,7 +22,13 @@ import { getRecommendationsByUser, getRecommendationsBySeed } from "@/lib/api";
 const Index = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
-  const [seedMovies, setSeedMovies] = useState<SeedMovie[]>([]);
+
+  // const [seedMovies, setSeedMovies] = useState<SeedMovie[]>([]);
+
+  const seedMovies = useSeeds((s) => s.seeds);
+  const setSeedMovies = useSeeds((s) => s.setSeedMovies);
+  const setRecommendations = useRecommendations((s) => s.setRecommendations);
+
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +37,11 @@ const Index = () => {
   const hasSeedMovies = seedMovies.length > 0;
   const canSubmit = hasUsername || hasSeedMovies;
 
-  const handleAddMovie = (movie: { id: string; poster: string }) => {
+  const handleAddMovie = (movie: {
+    id: string;
+    poster: string;
+    title: string;
+  }) => {
     if (!seedMovies.find((m) => m.id === movie.id)) {
       setSeedMovies([...seedMovies, movie]);
       setUsername(""); // Clear username when adding seed movies
@@ -47,21 +65,17 @@ const Index = () => {
 
     try {
       let recommendations: string[];
-      
+
       if (hasUsername) {
         recommendations = await getRecommendationsByUser(username.trim());
       } else {
-        recommendations = await getRecommendationsBySeed(seedMovies.map((m) => m.id));
+        recommendations = await getRecommendationsBySeed(
+          seedMovies.map((m) => m.id),
+        );
       }
+      setRecommendations(recommendations);
 
-      // Navigate to results page with recommendations
-      navigate("/results", { 
-        state: { 
-          recommendations,
-          source: hasUsername ? "letterboxd" : "seed",
-          sourceValue: hasUsername ? username : seedMovies
-        } 
-      });
+      navigate("/results?page=0&&itemsPerPage=10");
     } catch (err) {
       setError("Failed to get recommendations. Please try again.");
     } finally {
@@ -76,7 +90,9 @@ const Index = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-3 animate-fade-in">
             <Film className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">Movie Recommender</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              Movie Recommender
+            </h1>
           </div>
           <p className="text-muted-foreground mt-2 animate-fade-in">
             Get personalized movie recommendations based on your taste
@@ -88,14 +104,17 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Letterboxd Username Card */}
-          <Card className={`transition-all duration-300 ${hasSeedMovies ? "opacity-50" : ""}`}>
+          <Card
+            className={`transition-all duration-300 ${hasSeedMovies ? "opacity-50" : ""}`}
+          >
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
                 Letterboxd Username
               </CardTitle>
               <CardDescription>
-                Enter your Letterboxd username to get personalized recommendations
+                Enter your Letterboxd username to get personalized
+                recommendations
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -113,15 +132,17 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Divider */}
           <div className="flex items-center gap-4">
             <div className="flex-1 h-px bg-border" />
-            <span className="text-muted-foreground text-sm font-medium">OR</span>
+            <span className="text-muted-foreground text-sm font-medium">
+              OR
+            </span>
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          {/* Seed Movies Card */}
-          <Card className={`transition-all duration-300 ${hasUsername ? "opacity-50" : ""}`}>
+          <Card
+            className={`transition-all duration-300 ${hasUsername ? "opacity-50" : ""}`}
+          >
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
@@ -136,6 +157,7 @@ const Index = () => {
                 {seedMovies.map((movie) => (
                   <div key={movie.id} className="group animate-scale-in">
                     <MovieCard
+                      title={movie.title}
                       poster={movie.poster}
                       onRemove={() => handleRemoveMovie(movie.id)}
                     />
@@ -149,12 +171,8 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Error Message */}
-          {error && (
-            <p className="text-destructive text-center">{error}</p>
-          )}
+          {error && <p className="text-destructive text-center">{error}</p>}
 
-          {/* Submit Button */}
           <div className="flex justify-center pt-4">
             <Button
               size="lg"
@@ -178,7 +196,6 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Search Modal */}
       <MovieSearchModal
         open={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}

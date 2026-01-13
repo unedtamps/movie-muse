@@ -1,40 +1,55 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MovieCard } from "@/components/MovieCard";
 import { MovieDetailsModal } from "@/components/MovieDetailsModal";
 import { RecommendedMovie } from "@/types/movie";
 import { getMovieDetails } from "@/lib/api";
-import { Home, Shuffle, ChevronLeft, ChevronRight, Loader2, Film } from "lucide-react";
-
-const ITEMS_PER_PAGE = 5;
+import { useRecommendations } from "@/stores/recommendations";
+import {
+  Home,
+  Shuffle,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Film,
+} from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 const Results = () => {
-  const location = useLocation();
   const navigate = useNavigate();
-  const { recommendations = [] } = location.state || {};
+  const recommendations = useRecommendations((s) => s.recommendations);
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const [movies, setMovies] = useState<RecommendedMovie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(0);
+  const currentPage = Number(searchParams.get("page") ?? 0);
+  const itemsPerPage = Number(searchParams.get("itemsPerPage") ?? 10);
+
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
-  const [selectedMovie, setSelectedMovie] = useState<RecommendedMovie | null>(null);
+  const [selectedMovie, setSelectedMovie] = useState<RecommendedMovie | null>(
+    null,
+  );
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  const totalPages = Math.ceil(movies.length / ITEMS_PER_PAGE);
-  const startIndex = currentPage * ITEMS_PER_PAGE;
-  const currentMovies = movies.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(recommendations.length / itemsPerPage);
 
   useEffect(() => {
-    if (!recommendations.length) {
+    const start = currentPage * itemsPerPage;
+    const pageRecommendations = recommendations.slice(
+      start,
+      start + itemsPerPage,
+    );
+
+    if (!pageRecommendations.length) {
       navigate("/");
       return;
     }
 
     const fetchMovieDetails = async () => {
       setIsLoading(true);
-      
-      const moviePromises = recommendations.map(async (filmId: string) => {
+
+      const moviePromises = pageRecommendations.map(async (filmId: string) => {
         try {
           const details = await getMovieDetails(filmId);
           return {
@@ -48,9 +63,9 @@ const Results = () => {
             casts: details.casts,
             tagline: details.tagline,
             duration: details.duration,
+            rating: details.rating,
           };
         } catch (error) {
-          // Return basic movie with placeholder if details fail
           return {
             id: filmId,
             poster: "/placeholder.svg",
@@ -64,30 +79,49 @@ const Results = () => {
     };
 
     fetchMovieDetails();
-  }, [recommendations, navigate]);
+  }, [currentPage, itemsPerPage, recommendations, navigate]);
 
-  const handleRandomPick = () => {
-    const randomIndex = Math.floor(Math.random() * movies.length);
-    const pageForIndex = Math.floor(randomIndex / ITEMS_PER_PAGE);
-    setCurrentPage(pageForIndex);
-    setHighlightedIndex(randomIndex);
-    
-    // Clear highlight after animation
-    setTimeout(() => setHighlightedIndex(null), 2000);
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  const handleRandomPick = async () => {
+    if (!movies.length) return;
+
+    setHighlightedIndex(null);
+
+    for (let i = 0; i < movies.length; i++) {
+      const idx = Math.floor(Math.random() * movies.length);
+      setHighlightedIndex(idx);
+      await sleep(120);
+    }
+
+    const finalIndex = Math.floor(Math.random() * movies.length);
+    setHighlightedIndex(finalIndex);
+    setTimeout(() => setHighlightedIndex(null), 1000);
+
+    await sleep(300);
+
+    setSelectedMovie(movies[finalIndex]);
+    setIsDetailsOpen(true);
   };
 
   const handleMovieClick = (movie: RecommendedMovie) => {
     setSelectedMovie(movie);
+
     setIsDetailsOpen(true);
   };
 
   const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(0, prev - 1));
+    // setCurrentPage((prev) => Math.max(0, prev - 1));
+    const prev = Math.max(0, currentPage - 1);
+    setSearchParams({ page: String(prev), itemsPerPage: String(itemsPerPage) });
     setHighlightedIndex(null);
   };
 
   const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+    // setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+    const next = Math.min(totalPages - 1, currentPage + 1);
+    setSearchParams({ page: String(next), itemsPerPage: String(itemsPerPage) });
     setHighlightedIndex(null);
   };
 
@@ -96,7 +130,9 @@ const Results = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground">Loading your recommendations...</p>
+          <p className="text-muted-foreground">
+            Loading your recommendations...
+          </p>
         </div>
       </div>
     );
@@ -104,13 +140,14 @@ const Results = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Film className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">Your Recommendations</h1>
+              <h1 className="text-3xl font-bold text-foreground">
+                Your Recommendations
+              </h1>
             </div>
             <Button variant="outline" onClick={() => navigate("/")}>
               <Home className="h-4 w-4 mr-2" />
@@ -123,10 +160,8 @@ const Results = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          {/* Action Buttons */}
           <div className="flex justify-center mb-8">
             <Button onClick={handleRandomPick} variant="secondary" size="lg">
               <Shuffle className="h-4 w-4 mr-2" />
@@ -136,8 +171,7 @@ const Results = () => {
 
           {/* Movie Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-8">
-            {currentMovies.map((movie, index) => {
-              const globalIndex = startIndex + index;
+            {movies.map((movie, index) => {
               return (
                 <div
                   key={movie.id}
@@ -145,15 +179,20 @@ const Results = () => {
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <MovieCard
+                    title={movie.name || "Untitled"}
                     poster={movie.poster}
                     onClick={() => handleMovieClick(movie)}
-                    isHighlighted={highlightedIndex === globalIndex}
+                    isHighlighted={highlightedIndex === index}
                   />
                   {movie.name && (
                     <div className="mt-2 text-center">
-                      <p className="font-medium text-sm truncate">{movie.name}</p>
+                      <p className="font-medium text-sm truncate">
+                        {movie.name}
+                      </p>
                       {movie.year && (
-                        <p className="text-xs text-muted-foreground">{movie.year}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {movie.year}
+                        </p>
                       )}
                     </div>
                   )}
@@ -184,12 +223,26 @@ const Results = () => {
                 Next
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
+
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setSearchParams({ itemsPerPage: e.target.value, page: "0" });
+                  setHighlightedIndex(null);
+                }}
+                className="border rounded-md px-2 py-1 text-sm bg-background"
+              >
+                {[10, 20, 50, 100].map((n) => (
+                  <option key={n} value={n}>
+                    {n} / page
+                  </option>
+                ))}
+              </select>
             </div>
           )}
         </div>
       </main>
 
-      {/* Movie Details Modal */}
       <MovieDetailsModal
         movie={selectedMovie}
         open={isDetailsOpen}
