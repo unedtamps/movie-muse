@@ -1,5 +1,5 @@
 // API Configuration - Replace with your production URL
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "https://movie-muse-api.unedotampubolon.com";
 
 // Types
 export interface MovieSearchResult {
