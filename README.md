@@ -58,7 +58,7 @@ To get a local copy up and running, follow these simple steps.
 
 ## API
 
-The application uses the [Movie-API](https://github.com/dshvad/Movie-API) to fetch movie data and recommendations. Make sure the API is running locally on port `5000`.
+The application uses the [Movie-API](https://github.com/unedtamps/api-movie-muse) to fetch movie data and recommendations. Make sure the API is running locally on port `5000`.
 
 ## Contributing
 
