@@ -1,26 +1,20 @@
+import { MagnetURL, MovieDetails, MovieSearchResult } from "@/types/movie";
+
 // API Configuration - Replace with your production URL
 const API_BASE_URL = "https://movie-muse-api.unedotampubolon.com";
+const API_INDEXER_URL = "https://torrent-api.unedotampubolon.com";
 
 // Types
-export interface MovieSearchResult {
-  film_id: string;
-  poster: string;
-  title: string;
-}
 
-export interface MovieDetails {
-  id: string;
-  name: string;
-  year: string;
-  director: string;
-  duration: string;
-  genres: string;
-  casts: string;
-  synopsis: string;
-  tagline: string;
-  themes: string;
-  poster: string;
-  rating: string;
+export async function getMoviesMagnet(filmId: string): Promise<MagnetURL[]> {
+  let cleanId = filmId.startsWith("/film/") ? filmId.slice(6) : filmId;
+  cleanId = cleanId.split("/")[0];
+  const response = await fetch(`${API_INDEXER_URL}/movies/${cleanId}`, {
+    method: "GET",
+    headers: { accept: "application/json" },
+  });
+  if (!response.ok) throw new Error("Failed to get movie details");
+  return response.json();
 }
 
 export async function searchMovies(

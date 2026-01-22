@@ -5,8 +5,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { RecommendedMovie } from "@/types/movie";
-import { Clock, User, Film, Star } from "lucide-react";
+import { MagnetURL, RecommendedMovie } from "@/types/movie";
+import { Magnet, Clock, User, Film, Star, Loader2, Search } from "lucide-react";
+import { Button } from "./ui/button";
+import { getMoviesMagnet } from "@/lib/api";
+import { useEffect, useRef, useState } from "react";
 
 interface MovieDetailsModalProps {
   movie: RecommendedMovie | null;
@@ -20,8 +23,41 @@ export function MovieDetailsModal({
   onClose,
 }: MovieDetailsModalProps) {
   if (!movie) return null;
+  const [magnets, setMagnets] = useState<MagnetURL[]>([]);
 
   const rating = movie.rating ? parseFloat(movie.rating) : null;
+  const truncate = (s: string, n = 100) =>
+    s.length > n ? s.slice(0, n) + "…" : s;
+  const [isLoading, setIsLoading] = useState(false);
+  const magnetCache = useRef(new Map<string, MagnetURL[]>());
+
+  const getMagnetUrl = async () => {
+    if (!movie) return;
+
+    const cached = magnetCache.current.get(movie.id);
+    if (cached) {
+      setMagnets(cached);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const data = await getMoviesMagnet(movie.name);
+      magnetCache.current.set(movie.id, data);
+      setMagnets(data);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (!movie?.id) return;
+
+    const cached = magnetCache.current.get(movie.id);
+    if (cached) {
+      setMagnets(cached);
+    } else {
+      setMagnets([]);
+    }
+  }, [movie?.id]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -124,6 +160,56 @@ export function MovieDetailsModal({
                 <p className="text-muted-foreground text-sm">{movie.casts}</p>
               </div>
             )}
+            <Button onClick={getMagnetUrl}>
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <div className="flex flex-row gap-3 justify-center align-middle">
+                  <Magnet className="h-4 w-4" /> Get Download Link
+                </div>
+              )}
+            </Button>
+
+            {magnets?.map((magnet) => (
+              <div
+                key={magnet.id + magnet.tracker}
+                className="flex items-center justify-between gap-1 py-1"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-xs px-2 py-0.5 rounded border bg-muted shrink-0">
+                    {magnet.tracker}
+                  </span>
+
+                  <a
+                    href={magnet.id}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm hover:underline truncate max-w-[240px]"
+                    title={magnet.title}
+                  >
+                    {truncate(magnet.title)}
+                  </a>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs text-muted-foreground">
+                    👥 {magnet.seeders}
+                  </span>
+
+                  <a
+                    href={magnet.magnet_uri}
+                    title="Open magnet"
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      navigator.clipboard.writeText(magnet.magnet_uri);
+                    }}
+                    className="hover:opacity-80"
+                  >
+                    <Magnet size={18} />
+                  </a>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </DialogContent>

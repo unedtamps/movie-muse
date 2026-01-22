@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MovieCard } from "@/components/MovieCard";
 import { MovieDetailsModal } from "@/components/MovieDetailsModal";
 import { RecommendedMovie } from "@/types/movie";
-import { getMovieDetails } from "@/lib/api";
+import { getMovieDetails, getMoviesMagnet } from "@/lib/api";
 import { useRecommendations } from "@/stores/recommendations";
 import {
   Home,
@@ -15,6 +15,7 @@ import {
   Film,
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { SpinWheelComp } from "@/components/SpinWheel";
 
 const Results = () => {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ const Results = () => {
     null,
   );
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isWheelOpen, setIsWheelOpen] = useState(false);
 
   const totalPages = Math.ceil(recommendations.length / itemsPerPage);
 
@@ -52,6 +54,7 @@ const Results = () => {
       const moviePromises = pageRecommendations.map(async (filmId: string) => {
         try {
           const details = await getMovieDetails(filmId);
+          // const magnet = await getMoviesMagnet(filmId);
           return {
             id: filmId,
             poster: details.poster,
@@ -64,6 +67,7 @@ const Results = () => {
             tagline: details.tagline,
             duration: details.duration,
             rating: details.rating,
+            // magnet: magnet,
           };
         } catch (error) {
           return {
@@ -81,33 +85,33 @@ const Results = () => {
     fetchMovieDetails();
   }, [currentPage, itemsPerPage, recommendations, navigate]);
 
-  const sleep = (ms: number) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
+  // const sleep = (ms: number) =>
+  //   new Promise((resolve) => setTimeout(resolve, ms));
+  // setHighlightedIndex(null);
+
+  // for (let i = 0; i < movies.length; i++) {
+  //   const idx = Math.floor(Math.random() * movies.length);
+  //   setHighlightedIndex(idx);
+  //   await sleep(120);
+  // }
+
+  // const finalIndex = Math.floor(Math.random() * movies.length);
+  // setHighlightedIndex(finalIndex);
+  // setTimeout(() => setHighlightedIndex(null), 1000);
+
+  // await sleep(300);
+
+  // setSelectedMovie(movies[finalIndex]);
+  // setIsDetailsOpen(true);
 
   const handleRandomPick = async () => {
     if (!movies.length) return;
 
-    setHighlightedIndex(null);
-
-    for (let i = 0; i < movies.length; i++) {
-      const idx = Math.floor(Math.random() * movies.length);
-      setHighlightedIndex(idx);
-      await sleep(120);
-    }
-
-    const finalIndex = Math.floor(Math.random() * movies.length);
-    setHighlightedIndex(finalIndex);
-    setTimeout(() => setHighlightedIndex(null), 1000);
-
-    await sleep(300);
-
-    setSelectedMovie(movies[finalIndex]);
-    setIsDetailsOpen(true);
+    setIsWheelOpen(true);
   };
 
   const handleMovieClick = (movie: RecommendedMovie) => {
     setSelectedMovie(movie);
-
     setIsDetailsOpen(true);
   };
 
@@ -242,6 +246,14 @@ const Results = () => {
           )}
         </div>
       </main>
+
+      <SpinWheelComp
+        items={movies.map((movie) => movie.name || "Untitled")}
+        open={isWheelOpen}
+        movies={movies}
+        handleMovieClick={handleMovieClick}
+        onClose={() => setIsWheelOpen(false)}
+      />
 
       <MovieDetailsModal
         movie={selectedMovie}

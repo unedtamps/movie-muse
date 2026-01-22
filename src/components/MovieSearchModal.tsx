@@ -8,7 +8,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Loader2 } from "lucide-react";
-import { searchMovies, MovieSearchResult } from "@/lib/api";
+import { searchMovies } from "@/lib/api";
+import { MovieSearchResult } from "@/types/movie";
 
 interface MovieSearchModalProps {
   open: boolean;
