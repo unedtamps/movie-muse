@@ -22,12 +22,7 @@ export function MovieDetailsModal({
   open,
   onClose,
 }: MovieDetailsModalProps) {
-  if (!movie) return null;
   const [magnets, setMagnets] = useState<MagnetURL[]>([]);
-
-  const rating = movie.rating ? parseFloat(movie.rating) : null;
-  const truncate = (s: string, n = 100) =>
-    s.length > n ? s.slice(0, n) + "…" : s;
   const [isLoading, setIsLoading] = useState(false);
   const magnetCache = useRef(new Map<string, MagnetURL[]>());
 
@@ -58,6 +53,12 @@ export function MovieDetailsModal({
       setMagnets([]);
     }
   }, [movie?.id]);
+
+  if (!movie) return null;
+
+  const rating = movie.rating ? parseFloat(movie.rating) : null;
+  const truncate = (s: string, n = 100) =>
+    s.length > n ? s.slice(0, n) + "…" : s;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

@@ -14,7 +14,16 @@ export async function getMoviesMagnet(filmId: string): Promise<MagnetURL[]> {
     headers: { accept: "application/json" },
   });
   if (!response.ok) throw new Error("Failed to get movie details");
-  return response.json();
+  const data_result: MagnetURL[] = await response.json();
+  const normalizedSearchTitle = cleanId
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, " ");
+  return data_result.filter((file) =>
+    file.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, " ")
+      .includes(normalizedSearchTitle),
+  );
 }
 
 export async function searchMovies(
