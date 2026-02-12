@@ -1,8 +1,10 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "lensboxd",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "AI-powered movie recommendation tool for Letterboxd users. Discover personalized film recommendations based on your taste.",
+  "author": "Lensboxd",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -51,10 +53,10 @@
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
+    "react-helmet-async": "^2.0.5",
     "react-hook-form": "^7.61.1",
     "react-resizable-panels": "^2.1.9",
     "react-router-dom": "^6.30.1",
-    "react-spin-wheel": "^0.0.7",
     "recharts": "^2.15.4",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.6.0",
@@ -81,5 +83,16 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19"
-  }
+  },
+  "keywords": [
+    "lensboxd",
+    "letterboxd",
+    "movie-recommendations",
+    "film-discovery",
+    "cinema",
+    "movie-finder",
+    "personalized-recommendations",
+    "film-recommendations"
+  ],
+  "license": "MIT"
 }
