@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
 </p>
 
-**Lensboxd** is an AI-powered movie recommendation web application designed for cinephiles. Discover your next favorite film with personalized recommendations based on your Letterboxd profile or hand-picked seed movies.
+**Lensboxd** is a curated movie recommendation web application designed for cinephiles. Discover your next favorite film with personalized recommendations based on your Letterboxd profile or hand-picked seed movies.
 
 🔗 **Live Demo**: [https://lensboxd.site](https://lensboxd.site)
 
@@ -16,7 +16,7 @@
 - **🔮 Letterboxd Integration** - Connect your Letterboxd username for tailored recommendations
 - **🎬 Seed Movie Recommendations** - Select movies you love to discover similar films
 - **🎯 Random Movie Picker** - Let our spin wheel decide your next watch
-- **🤖 AI-Powered** - Advanced algorithms analyze your taste profile
+- **🎭 Curated Discovery** - Sophisticated algorithms analyze your taste profile
 - **📱 Responsive Design** - Seamless experience on desktop and mobile
 - **🌙 Cinematic UI** - Dark, immersive interface inspired by film culture
 

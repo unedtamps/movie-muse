@@ -10,7 +10,7 @@
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://lensboxd.site/og-image.jpg</image:loc>
-      <image:title>Lensboxd - AI Movie Recommendations</image:title>
+      <image:title>Lensboxd - Curated Movie Recommendations</image:title>
       <image:caption>Discover personalized movie recommendations based on your Letterboxd profile</image:caption>
     </image:image>
   </url>

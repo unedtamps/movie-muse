@@ -1,7 +1,7 @@
 {
-  "name": "Lensboxd - AI Movie Recommendations",
+  "name": "Lensboxd - Curated Movie Recommendations",
   "short_name": "Lensboxd",
-  "description": "AI-powered movie recommendation tool for Letterboxd users. Discover personalized film recommendations.",
+  "description": "Curated movie recommendation tool for Letterboxd users. Discover personalized film recommendations.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f0f0f",

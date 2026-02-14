@@ -112,7 +112,7 @@ const Index = () => {
                   Lensboxd
                 </h1>
                 <p className="text-xs text-[#0992C2]/80 tracking-wider uppercase">
-                  AI-Powered Film Discovery
+                  Curated Film Discovery
                 </p>
               </div>
             </div>
@@ -140,7 +140,7 @@ const Index = () => {
           </h2>
           <p className="text-muted-foreground text-lg max-w-lg mx-auto">
             Connect your Letterboxd profile or select seed movies to get
-            personalized recommendations powered by AI
+            personalized recommendations crafted for you
           </p>
         </div>
 
@@ -278,9 +278,9 @@ const Index = () => {
             },
             {
               icon: Sparkles,
-              title: "AI-Powered",
+              title: "Smart Curation",
               description:
-                "Advanced algorithms analyze your taste to find films you'll love",
+                "Sophisticated analysis of your taste to find films you'll love",
             },
             {
               icon: Film,
